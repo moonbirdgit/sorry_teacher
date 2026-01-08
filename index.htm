@@ -3,69 +3,230 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>論壇</title>
+    <title>暖心論壇</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
+      :root {
+        /* 定義暖色調色票 */
+        --bg-color: #fffbf0; /* 溫暖米白背景 */
+        --card-bg: #ffffff; /* 純白卡片 */
+        --primary-color: #d35400; /* 焦糖橘 (按鈕/重點) */
+        --text-main: #2c3e50; /* 深灰文字 */
+        --text-sub: #7f8c8d; /* 淺灰輔助字 */
+        --border-radius: 12px; /* 圓角 */
+        --shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* 輕微陰影 */
+      }
+
       body {
-        font-family: sans-serif;
-        max-width: 600px;
-        margin: 2rem auto;
-        padding: 0 1rem;
+        font-family: "Noto Sans TC", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
       }
-      .input-group {
-        margin-bottom: 1rem;
+
+      /* 頂部導覽列 */
+      header {
+        background-color: var(--card-bg);
+        padding: 1rem 0;
+        box-shadow: var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 100;
       }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-decoration: none;
+      }
+
+      /* 輸入區塊 (像是一個發文面板) */
+      .post-editor {
+        background: var(--card-bg);
+        padding: 20px;
+        margin: 2rem 0;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border: 1px solid #f0e6d2;
+      }
+
+      .post-editor h3 {
+        margin-top: 0;
+        color: var(--primary-color);
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
       input,
       textarea {
         width: 100%;
-        padding: 8px;
-        margin-top: 5px;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
         box-sizing: border-box;
+        font-family: inherit;
+        background-color: #fcfcfc;
+        transition: border 0.3s;
       }
-      button {
-        padding: 10px 20px;
-        background-color: #007bff;
+
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        background-color: #fff;
+      }
+
+      button#submitBtn {
+        background-color: var(--primary-color);
         color: white;
         border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
         cursor: pointer;
+        width: 100%;
+        transition: background 0.3s;
       }
-      button:hover {
-        background-color: #0056b3;
+
+      button#submitBtn:hover {
+        background-color: #e67e22;
       }
+
+      /* 留言列表區 */
       #messages {
-        margin-top: 2rem;
-        border-top: 1px solid #ccc;
-        padding-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding-bottom: 50px;
       }
-      .msg-card {
-        background: #f9f9f9;
-        padding: 10px;
+
+      /* 單張留言卡片 */
+      .post-card {
+        background: var(--card-bg);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        border-left: 5px solid var(--primary-color); /* 左側裝飾線 */
+        position: relative; /* 為了定位刪除按鈕 */
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .post-header {
+        display: flex;
+        align-items: center;
         margin-bottom: 10px;
-        border-radius: 5px;
       }
-      .msg-time {
-        font-size: 0.8rem;
-        color: #666;
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: #fcece0; /* 淺橘色底 */
+        color: var(--primary-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 10px;
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .user-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .post-time {
+        font-size: 0.85rem;
+        color: var(--text-sub);
+      }
+
+      .post-content {
+        font-size: 1rem;
+        white-space: pre-wrap; /* 保留換行 */
+        color: #444;
+      }
+
+      /* 刪除按鈕樣式 */
+      .delete-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: transparent;
+        border: none;
+        color: #868686;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+
+      .delete-btn:hover {
+        color: #e74c3c; /* 滑鼠移過去變紅色 */
       }
     </style>
   </head>
   <body>
-    <h1>論壇</h1>
+    <header>
+      <div class="container">
+        <a href="#" class="logo">論壇：D</a>
+      </div>
+    </header>
 
-    <div class="input-group">
-      <label>暱稱：</label>
-      <input type="text" id="username" placeholder="請輸入名字" />
-    </div>
-    <div class="input-group">
-      <label>留言內容：</label>
-      <textarea id="content" rows="3" placeholder="想說些什麼..."></textarea>
-    </div>
-    <button id="submitBtn">送出留言</button>
+    <div class="container">
+      <div class="post-editor">
+        <h3>發表新話題</h3>
+        <div class="form-group">
+          <input type="text" id="username" placeholder="你的暱稱" />
+        </div>
+        <div class="form-group">
+          <textarea
+            id="content"
+            rows="4"
+            placeholder="分享你的想法..."
+          ></textarea>
+        </div>
+        <button id="submitBtn">發佈留言</button>
+      </div>
 
-    <div id="messages">
-      <p>載入留言中...</p>
+      <div id="messages">
+        <p style="text-align: center; color: #999">正在載入精彩討論...</p>
+      </div>
     </div>
+
     <script type="module">
-      // Import the functions you need from the SDKs you need
+      // 1. 引入 Firebase 核心與 Firestore
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
       import {
         getFirestore,
@@ -76,11 +237,10 @@
         orderBy,
         serverTimestamp,
         deleteDoc,
-        doc, // <--- 新增這兩個
+        doc,
       } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-      // Your web app's Firebase configuration
-      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      // 2. 設定檔 (請確保這裡填入你的資訊)
       const firebaseConfig = {
         apiKey: "AIzaSyCqV-4cy9XkI6otC__pta1VjV5CxHWRLkU",
         authDomain: "forschool-293da.firebaseapp.com",
@@ -91,86 +251,106 @@
         measurementId: "G-8VHDX3SJ7Z",
       };
 
-      // Initialize Firebase
+      // 3. 初始化
       const app = initializeApp(firebaseConfig);
-
       const db = getFirestore(app);
+
+      // 4. 發送留言邏輯
       document
         .getElementById("submitBtn")
         .addEventListener("click", async () => {
           const name = document.getElementById("username").value;
           const text = document.getElementById("content").value;
 
-          if (name === "" || text === "") {
-            alert("請輸入暱稱和內容！");
+          if (name.trim() === "" || text.trim() === "") {
+            alert("暱稱和內容不能留白喔！");
             return;
           }
 
           try {
-            // 將資料寫入 Firestore 的 "posts" 集合
+            const btn = document.getElementById("submitBtn");
+            btn.innerText = "發送中...";
+            btn.disabled = true;
+
             await addDoc(collection(db, "posts"), {
               name: name,
               text: text,
-              timestamp: serverTimestamp(), // 記錄伺服器時間
+              timestamp: serverTimestamp(),
             });
 
-            // 清空輸入框
             document.getElementById("content").value = "";
-            alert("留言成功！");
+            // 暱稱通常不用一直重打，所以我不清空暱稱欄位
+            btn.innerText = "發佈留言";
+            btn.disabled = false;
           } catch (e) {
-            console.error("Error adding document: ", e);
-            alert("留言失敗，請檢查 Console");
+            console.error("Error:", e);
+            alert("發送失敗");
           }
         });
 
-      // 5. 即時監聽留言列表 (當資料庫有變動，這裡會自動更新)
+      // 5. 監聽留言列表 (渲染成漂亮卡片)
       const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
 
       onSnapshot(q, (snapshot) => {
         const msgDiv = document.getElementById("messages");
-        msgDiv.innerHTML = ""; // 先清空目前的顯示
+
+        // 如果沒有留言
+        if (snapshot.empty) {
+          msgDiv.innerHTML =
+            '<p style="text-align:center; color:#ccc;">目前還沒有任何討論，搶頭香吧！</p>';
+          return;
+        }
+
+        msgDiv.innerHTML = "";
+
         snapshot.forEach((doc) => {
           const data = doc.data();
+
+          // 時間處理
           let timeStr = "剛剛";
           if (data.timestamp) {
-            timeStr = new Date(data.timestamp.toDate()).toLocaleString();
+            // 轉成更易讀的格式 (例如: 2023/5/20 14:30)
+            const date = data.timestamp.toDate();
+            timeStr = `${date.getFullYear()}/${
+              date.getMonth() + 1
+            }/${date.getDate()} ${date.getHours()}:${String(
+              date.getMinutes()
+            ).padStart(2, "0")}`;
           }
 
-          // --- 修改這裡：加入刪除按鈕 (data-id 屬性是用來存 ID 的) ---
+          // 取得暱稱的第一個字當作頭像
+          const firstChar = data.name ? data.name.charAt(0).toUpperCase() : "?";
+
+          // 產生卡片 HTML
           msgDiv.innerHTML += `
-                <div class="msg-card">
-                    <div style="display: flex; justify-content: space-between;">
-                        <strong>${data.name}</strong>
-                        <button class="delete-btn" data-id="${doc.id}" style="color: white; background-color: red; cursor: pointer;">X</button>
-                    </div>
-                    <span class="msg-time">(${timeStr})</span>
-                    <p>${data.text}</p>
+            <div class="post-card">
+              <div class="post-header">
+                <div class="user-avatar">${firstChar}</div>
+                <div class="user-info">
+                  <span class="user-name">${data.name}</span>
+                  <span class="post-time">${timeStr}</span>
                 </div>
-            `;
+                <button class="delete-btn" data-id="${doc.id}" title="刪除留言">×</button>
+              </div>
+              <div class="post-content">${data.text}</div>
+            </div>
+          `;
         });
       });
-      // 6. 刪除留言的功能
-      // 我們監聽整個 messages 區塊的點擊事件
+
+      // 6. 刪除功能
       document
         .getElementById("messages")
         .addEventListener("click", async (e) => {
-          // 檢查被點擊的元件是不是 class="delete-btn" 的按鈕
           if (e.target.classList.contains("delete-btn")) {
-            // 詢問使用者是否確定
-            if (!confirm("確定要刪除這則留言嗎？")) {
-              return;
-            }
+            if (!confirm("確定要刪除這則討論嗎？")) return;
 
-            // 取得藏在按鈕裡的 ID
             const id = e.target.getAttribute("data-id");
-
             try {
-              // 執行刪除：告訴資料庫去 "posts" 集合裡找到這個 "id" 的文件並刪除
               await deleteDoc(doc(db, "posts", id));
-              // 不需要 alert，因為 onSnapshot 會自動偵測到資料被刪除，並自動更新畫面
             } catch (err) {
-              console.error("刪除失敗：", err);
-              alert("刪除失敗，請檢查 Console");
+              console.error(err);
+              alert("刪除失敗");
             }
           }
         });
