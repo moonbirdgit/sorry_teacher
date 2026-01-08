@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的留言板</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        max-width: 600px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+      }
+      .input-group {
+        margin-bottom: 1rem;
+      }
+      input,
+      textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        box-sizing: border-box;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #messages {
+        margin-top: 2rem;
+        border-top: 1px solid #ccc;
+        padding-top: 1rem;
+      }
+      .msg-card {
+        background: #f9f9f9;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+      }
+      .msg-time {
+        font-size: 0.8rem;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>簡單留言板</h1>
+
+    <div class="input-group">
+      <label>暱稱：</label>
+      <input type="text" id="username" placeholder="請輸入名字" />
+    </div>
+    <div class="input-group">
+      <label>留言內容：</label>
+      <textarea id="content" rows="3" placeholder="想說些什麼..."></textarea>
+    </div>
+    <button id="submitBtn">送出留言</button>
+
+    <div id="messages">
+      <p>載入留言中...</p>
+    </div>
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        onSnapshot,
+        query,
+        orderBy,
+        serverTimestamp,
+        deleteDoc,
+        doc, // <--- 新增這兩個
+      } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyCqV-4cy9XkI6otC__pta1VjV5CxHWRLkU",
+        authDomain: "forschool-293da.firebaseapp.com",
+        projectId: "forschool-293da",
+        storageBucket: "forschool-293da.firebasestorage.app",
+        messagingSenderId: "104705498420",
+        appId: "1:104705498420:web:c303fe7b2ad7dfb1185961",
+        measurementId: "G-8VHDX3SJ7Z",
+      };
+
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+
+      const db = getFirestore(app);
+      document
+        .getElementById("submitBtn")
+        .addEventListener("click", async () => {
+          const name = document.getElementById("username").value;
+          const text = document.getElementById("content").value;
+
+          if (name === "" || text === "") {
+            alert("請輸入暱稱和內容！");
+            return;
+          }
+
+          try {
+            // 將資料寫入 Firestore 的 "posts" 集合
+            await addDoc(collection(db, "posts"), {
+              name: name,
+              text: text,
+              timestamp: serverTimestamp(), // 記錄伺服器時間
+            });
+
+            // 清空輸入框
+            document.getElementById("content").value = "";
+            alert("留言成功！");
+          } catch (e) {
+            console.error("Error adding document: ", e);
+            alert("留言失敗，請檢查 Console");
+          }
+        });
+
+      // 5. 即時監聽留言列表 (當資料庫有變動，這裡會自動更新)
+      const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+
+      onSnapshot(q, (snapshot) => {
+        const msgDiv = document.getElementById("messages");
+        msgDiv.innerHTML = ""; // 先清空目前的顯示
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          let timeStr = "剛剛";
+          if (data.timestamp) {
+            timeStr = new Date(data.timestamp.toDate()).toLocaleString();
+          }
+
+          // --- 修改這裡：加入刪除按鈕 (data-id 屬性是用來存 ID 的) ---
+          msgDiv.innerHTML += `
+                <div class="msg-card">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>${data.name}</strong>
+                        <button class="delete-btn" data-id="${doc.id}" style="color: white; background-color: red; cursor: pointer;">X</button>
+                    </div>
+                    <span class="msg-time">(${timeStr})</span>
+                    <p>${data.text}</p>
+                </div>
+            `;
+        });
+      });
+      // 6. 刪除留言的功能
+      // 我們監聽整個 messages 區塊的點擊事件
+      document
+        .getElementById("messages")
+        .addEventListener("click", async (e) => {
+          // 檢查被點擊的元件是不是 class="delete-btn" 的按鈕
+          if (e.target.classList.contains("delete-btn")) {
+            // 詢問使用者是否確定
+            if (!confirm("確定要刪除這則留言嗎？")) {
+              return;
+            }
+
+            // 取得藏在按鈕裡的 ID
+            const id = e.target.getAttribute("data-id");
+
+            try {
+              // 執行刪除：告訴資料庫去 "posts" 集合裡找到這個 "id" 的文件並刪除
+              await deleteDoc(doc(db, "posts", id));
+              // 不需要 alert，因為 onSnapshot 會自動偵測到資料被刪除，並自動更新畫面
+            } catch (err) {
+              console.error("刪除失敗：", err);
+              alert("刪除失敗，請檢查 Console");
+            }
+          }
+        });
+    </script>
+  </body>
+</html>
